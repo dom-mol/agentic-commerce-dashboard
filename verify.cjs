@@ -22,6 +22,10 @@ for (const key of Object.keys(presets.baseline).filter(key => key !== 'delta')) 
 }
 close(calculate(presets.defensive).cutoff, .44);
 assert.equal(calculate(presets.none).region, 'none');
+close(presets.none.F, 190000);
+close(presets.none.a, .1);
+close(profit(presets.none, 0), -50000);
+close(profit(presets.none, 1), -290000);
 assert.equal(calculate({...presets.baseline, a:0}).region, 'none');
 assert.equal(calculate({...presets.baseline, a:0, F:0}).region, 'indifferent');
 assert.equal(calculate({...presets.defensive, delta:.44}).flat, true);
