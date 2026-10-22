@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Allow or block shopping agents?</title>
+<style>
+:root{--ink:#17323b;--muted:#526a73;--blue:#2469ae;--green:#19745e;--orange:#b45c27;--line:#dce4e5;--surface:#f4f7f6}
+*{box-sizing:border-box}body{margin:0;color:var(--ink);background:var(--surface);font:15px/1.5 system-ui,sans-serif}header{background:#183c45;color:white;padding:26px max(20px,calc((100vw - 1280px)/2))}h1{font-size:30px;line-height:1.15;margin:5px 0 10px}header p{margin:0;color:#d0e2e4;max-width:850px}.eyebrow{font-size:12px;letter-spacing:.13em;text-transform:uppercase}main{max-width:1320px;margin:auto;padding:22px;display:grid;grid-template-columns:280px minmax(0,1fr);gap:20px}aside,.panel,.stat{background:white;border:1px solid var(--line);border-radius:10px}aside{padding:18px;align-self:start}.panel{padding:20px;margin-bottom:18px}h2{font-size:18px;margin:0 0 12px}h3{font-size:15px;margin:14px 0 8px}.small,small{font-size:13px;color:var(--muted)}.small{margin:7px 0 0}label{display:block}input,select,button{font:inherit;color:inherit}input[type=number],select,button{border:1px solid #aebfc4;background:white;border-radius:5px;padding:8px;max-width:100%}select{width:100%}button,summary{cursor:pointer}button:hover{background:#eff5f6}input[type=range]{width:100%;accent-color:var(--blue);min-height:24px;margin:4px 0}input[type=number]{width:103px;text-align:right;font-variant-numeric:tabular-nums}.control{margin-top:14px}.control-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.control-head label{font-size:13px}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}.stat{padding:16px}.stat strong{display:block;font-size:23px;margin:4px 0}.stat span{font-size:13px;color:var(--muted)}.legend{display:flex;gap:15px;flex-wrap:wrap;font-size:13px}.key{display:inline-block;width:19px;height:3px;vertical-align:middle;margin-right:5px}.chart{display:block;width:100%;height:340px}.chart text{font:12px system-ui,sans-serif;fill:var(--muted)}.chart .grid{stroke:#e4eaec;stroke-width:1}.chart .zero{stroke:#789099;stroke-dasharray:5 4}.terms{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:8px 0}.terms strong{display:block;font-size:18px;font-variant-numeric:tabular-nums}.equation{font:14px/1.7 ui-monospace,Consolas,monospace;background:#f2f6f7;padding:12px;border-radius:5px;overflow-wrap:anywhere}.note{padding:12px 15px;background:#eaf3f0;border-left:3px solid var(--green);margin:14px 0}.note p{margin:4px 0}summary{font-size:18px;font-weight:600}details>p{margin-top:8px}.sensitivity-controls{display:flex;gap:14px;flex-wrap:wrap;align-items:end;margin:15px 0}.sensitivity-controls label{flex:1 1 160px}.sensitivity-controls select{margin-top:5px}.table-wrap{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:13px}th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line)}td{font-variant-numeric:tabular-nums}th{font-weight:600}.error{color:#a82f2f;min-height:1.5em}.muted{color:var(--muted)}footer{max-width:1320px;margin:auto;padding:0 22px 24px;color:var(--muted);font-size:13px}[hidden]{display:none!important}:focus-visible{outline:2px solid var(--blue);outline-offset:3px}@media(max-width:850px){main{grid-template-columns:240px minmax(0,1fr);padding:14px;gap:14px}.stats{grid-template-columns:1fr}.terms{grid-template-columns:1fr}.chart{height:310px}}@media(max-width:620px){main{grid-template-columns:1fr}.panel{padding:15px}header{padding:24px 16px}h1{font-size:26px}.stats{grid-template-columns:1fr 1fr}.stat strong{font-size:19px}.chart{height:300px}}@media(max-width:380px){.stats{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><h1>Allow or block shopping agents?</h1></header>
+<main>
+<aside aria-label="Parameters">
+<h2>Model inputs</h2>
+<label for="preset" class="small">Starting scenario</label>
+<select id="preset"><option value="baseline">Case 1 · 18.75%</option><option value="defensive">Case 2 · 37.5%</option><option value="all">Allow at every share</option><option value="none">Block at every share</option></select>
+<p class="small" id="scenario-note">Illustrative assumptions, not market estimates.</p>
+<div id="controls"></div>
+<p class="small"><var>N</var> and <var>m</var> are fixed in the paper’s illustration; they can also be varied here. Dollar inputs are USD.</p>
+<p class="error" id="error" role="alert"></p>
+<div class="actions"><button id="reset" type="button">Reset scenario</button><button id="export" type="button">Export CSV</button></div>
+</aside>
+<div>
+<div class="stats" aria-live="polite">
+<div class="stat"><span>Participation decision</span><strong id="decision"></strong><span id="decision-detail"></span></div>
+<div class="stat"><span>Effect of initial market share</span><strong id="case"></strong><span id="slope"></span></div>
+</div>
+<section class="panel">
+<h2>Incremental annual profit from agent access</h2>
+<div class="legend"><span><i class="key" style="background:var(--blue)"></i>Allow minus block</span><span>Green shading: positive incremental profit</span></div>
+<svg id="main-chart" class="chart" role="img" aria-label="Annual incremental profit versus initial retailer market share"></svg>
+<div class="control-head"><label for="share">Inspect market share</label><output id="share-value"></output></div>
+<input id="share" type="range" min="0" max="100" step="0.1" value="10">
+<div class="terms" id="terms" aria-live="polite"></div>
+<p id="probe-description" class="small"></p>
+<p class="small">Use the slider or click the chart to inspect a share. At zero profit the retailer is indifferent; “allow” includes equality.</p>
+<div class="equation" id="active-equation"></div>
+</section>
+<details class="panel">
+<summary>Why this decision?</summary>
+<div class="terms"><div><small>Acquisition value <var>A</var></small><strong id="A"></strong></div><div><small>Net retention value <var>D</var></small><strong id="D"></strong></div><div><small>Defection cutoff for Case 2</small><strong id="delta-cutoff"></strong></div></div>
+<p id="interpretation"></p>
+<div class="note"><strong>Two thresholds, two questions</strong><p id="threshold-explanation"></p></div>
+</details>
+<details class="panel" id="sensitivity">
+<summary>Show sensitivity analysis</summary>
+<p class="small">Compare alternative values of one input while keeping every other input at the current settings.</p>
+<div class="sensitivity-controls">
+<label for="sensitivity-parameter">Vary<select id="sensitivity-parameter"><option value="delta">Defection if blocked · 𝛿</option><option value="a">Agent adoption · 𝑎</option><option value="r">Acquisition probability · 𝑟</option><option value="c">Agent cost · 𝑐</option><option value="F">Annual fixed cost · 𝐹</option></select></label>
+<div><button id="set-defensive" type="button">Load 44% vs. 37.5% example</button></div>
+</div>
+<p id="sensitivity-note" class="small"></p>
+<div class="legend" id="sensitivity-legend"></div>
+<svg id="sensitivity-chart" class="chart" role="img" aria-label="Sensitivity comparison of incremental profit curves"></svg>
+<div class="table-wrap"><table><thead><tr><th>Scenario</th><th>Profit at 0%</th><th>Profit at 100%</th><th>Participation</th></tr></thead><tbody id="sensitivity-table"></tbody></table></div>
+</details>
+<details class="panel">
+<summary>Equations and assumptions</summary>
+<div class="equation"><var>A</var> = <var>r</var>(<var>m</var> − <var>c</var>) &nbsp; · &nbsp; <var>D</var> = <var>δm</var> − <var>c</var><br><var>ΔΠ</var>(<var>s</var>) = <var>aN</var>[(1 − <var>s</var>)<var>A</var> + <var>sD</var>] − <var>F</var><br><var>ΔΠ</var>′(<var>s</var>) = <var>aN</var>(<var>D</var> − <var>A</var>)<br><var>s</var>* = [<var>A</var> − <var>F</var>/(<var>aN</var>)] / (<var>A</var> − <var>D</var>)</div>
+<p>The threshold formula applies when <var>a</var> &gt; 0 and <var>A</var> ≠ <var>D</var>. If <var>A</var> &gt; <var>D</var>, profit falls with share; if <var>D</var> &gt; <var>A</var>, it rises. The endpoint profits determine whether the threshold is feasible or access is preferred everywhere or nowhere. With zero adoption, incremental profit is −<var>F</var>.</p>
+<p>Case 2 requires <var>δ</var> &gt; <var>c</var>/<var>m</var> + <var>r</var>(1 − <var>c</var>/<var>m</var>), for <var>a</var> &gt; 0. This condition concerns the slope, not whether profit covers <var>F</var>. For an interior Case 1 threshold, the paper’s comparative statics apply; outside that regime, inspect the full curve.</p>
+<p>Adoption <var>a</var> is the fraction using agents; <var>δ</var> is the probability of retailer defection conditional on agent use and blocked access. The baseline assumes no defection under access, a common agent cost, and constant probabilities across initial market shares. Market size <var>N</var> is held fixed along each curve.</p>
+</details>
+</div>
+</main>
+<footer>Web01 companion · Standalone, offline HTML · Current source document is unchanged.</footer>
+<script>
+"use strict";
+const specs=[
+ ["a","Agent adoption a (%)",0,100,1,20,100],
+ ["r","Acquisition probability r (%)",0,100,1,20,100],
+ ["delta","Defection if blocked δ (%)",0,100,1,20,100],
+ ["c","Agent cost c ($ / transaction)",0,29.5,.5,3,1],
+ ["F","Annual fixed cost F ($000s)",0,1000,10,190,.001],
+ ["N","Market transactions N (millions)",.1,5,.1,1,.000001],
+ ["m","Contribution margin m ($)",1,30,.5,10,1]
+];
+const presets={
+ baseline:{a:.2,r:.2,delta:.2,c:3,F:190000,N:1000000,m:10},
+ defensive:{a:.2,r:.2,delta:.6,c:3,F:400000,N:1000000,m:10},
+ all:{a:.2,r:.2,delta:.6,c:3,F:100000,N:1000000,m:10},
+ none:{a:.2,r:.2,delta:.2,c:3,F:400000,N:1000000,m:10}
+};
+const $=id=>document.getElementById(id);
+const money=x=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0}).format(x);
+const smallMoney=x=>"$"+x.toFixed(2);
+const pct=x=>(100*x).toFixed(2)+"%";
+const italicSymbols=text=>text.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/(?<![\p{L}])(a|r|c|m|s|N|F|A|D|δ|ΔΠ)(?![\p{L}])/gu,"<var>$1</var>");
+function calculate(p){
+ const A=p.r*(p.m-p.c),D=p.delta*p.m-p.c;
+ const intercept=p.a*p.N*A-p.F,slope=p.a*p.N*(D-A),end=intercept+slope;
+ const tol=1e-7,flat=Math.abs(slope)<tol,root=flat?null:-intercept/slope;
+ let region,decision,detail;
+ if(flat){
+  if(Math.abs(intercept)<tol){region="indifferent";decision="Indifferent at every share";detail="Incremental profit is zero throughout.";}
+  else if(intercept>0){region="all";decision="Allow at every share";detail="Positive incremental profit throughout.";}
+  else{region="none";decision="Block at every share";detail="Negative incremental profit throughout.";}
+ }else if(intercept>=-tol&&end>=-tol){region="all";decision="Allow at every share";detail="Both endpoint profits are nonnegative.";}
+ else if(intercept < -tol&&end < -tol){region="none";decision="Block at every share";detail="Both endpoint profits are negative.";}
+ else if(slope<0){region="below";decision="Allow at or below "+pct(root);detail="Indifferent at the threshold; block above it.";}
+ else{region="above";decision="Allow at or above "+pct(root);detail="Indifferent at the threshold; block below it.";}
+ const cutoff=p.c/p.m+p.r*(1-p.c/p.m);
+ return {A,D,intercept,slope,end,flat,root,region,decision,detail,cutoff};
+}
+const profit=(p,s)=>{const q=calculate(p);return q.intercept+q.slope*s;};
+function scenarios(p,key){
+ const q=calculate(p);let values;
+ if(key==="delta")values=[p.delta,.2,q.cutoff,.6];
+ else if(key==="a")values=[p.a,.1,.3,.5];
+ else if(key==="r")values=[p.r,.1,.3,.4];
+ else if(key==="c")values=[p.c,0,Math.min(1,p.m/4),p.m*.5];
+ else values=[p.F,0,p.F*.5,p.F+200000];
+ values=values.sort((a,b)=>a-b).filter((v,i,all)=>i===0||Math.abs(v-all[i-1])>1e-10);
+ return values.map(value=>({p:{...p,[key]:value},value,current:Math.abs(value-p[key])<1e-8}));
+}
+function createControls(){
+ specs.forEach(([id,label,min,max,step,value])=>{
+  const wrap=document.createElement("div");wrap.className="control";
+  wrap.innerHTML='<div class="control-head"><label for="'+id+'">'+label+'</label><input id="'+id+'" type="number" min="'+min+'" max="'+max+'" step="'+step+'" value="'+value+'"></div><input id="'+id+'-range" aria-label="'+label+' slider" type="range" min="'+min+'" max="'+max+'" step="'+step+'" value="'+value+'">';
+  $("controls").appendChild(wrap);
+  wrap.querySelector("label").innerHTML=italicSymbols(label);
+  $(id).addEventListener("input",()=>{if($(id).value!==""&&Number.isFinite(+$(id).value))$(id+"-range").value=$(id).value;custom();});
+  $(id+"-range").addEventListener("input",()=>{$(id).value=$(id+"-range").value;custom();});
+ });
+}
+function read(){
+ let p={};
+ for(const [id,label,min,max,,,scale] of specs){
+  if($(id).value===""||!Number.isFinite(+$(id).value)||+$(id).value<min||+$(id).value>max)throw new Error(label+": enter a value from "+min+" to "+max+".");
+  p[id]=+$(id).value/scale;
+ }
+ if(p.c>=p.m)throw new Error("Agent cost c must be below contribution margin m.");
+ return p;
+}
+function custom(){$("scenario-note").textContent="Custom settings · reset restores the selected scenario.";render();}
+function preset(name){
+ $("preset").value=name;
+ specs.forEach(([id,,,,,,scale])=>{$(id).value=+(presets[name][id]*scale).toFixed(8);$(id+"-range").value=$(id).value;});
+ $("scenario-note").textContent=name==="baseline"?"":"Illustrative scenario; other values differ from the paper.";
+ render();
+}
+function plot(id,lines,{root=null,region=null,share=null}={}){
+ const svg=$(id),w=Math.max(260,svg.clientWidth),h=svg.clientHeight;
+ const pad={l:63,r:18,t:28,b:43},pw=w-pad.l-pad.r,ph=h-pad.t-pad.b;
+ const endpoints=lines.flatMap(l=>{const q=calculate(l.p);return [q.intercept/1000,q.end/1000];});
+ let lo=Math.min(0,...endpoints),hi=Math.max(0,...endpoints),margin=(hi-lo||1)*.14;lo-=margin;hi+=margin;
+ const x=s=>pad.l+pw*s,y=v=>pad.t+ph*(hi-v)/(hi-lo),tick=v=>Math.abs(v)>=1000?(v/1000).toFixed(1)+"m":v.toFixed(Math.abs(v)<1?1:0)+"k";
+ let html='<title>'+svg.getAttribute("aria-label")+'</title><text x="'+pad.l+'" y="15">Annual profit ($)</text>';
+ let interval=null;
+ if(region==="all")interval=[0,1];if(region==="below")interval=[0,root];if(region==="above")interval=[root,1];
+ if(interval)html+='<rect x="'+x(interval[0])+'" y="'+pad.t+'" width="'+Math.max(0,(interval[1]-interval[0])*pw)+'" height="'+ph+'" fill="#eaf3ef"/>';
+ for(let i=0;i<=4;i++){let v=lo+(hi-lo)*i/4;html+='<line class="grid" x1="'+pad.l+'" x2="'+(w-pad.r)+'" y1="'+y(v)+'" y2="'+y(v)+'"/><text x="'+(pad.l-8)+'" y="'+(y(v)+4)+'" text-anchor="end">'+tick(v)+'</text>';}
+ html+='<line class="zero" x1="'+pad.l+'" x2="'+(w-pad.r)+'" y1="'+y(0)+'" y2="'+y(0)+'"/>';
+ (w<420?[0,.5,1]:[0,.25,.5,.75,1]).forEach(s=>html+='<text x="'+x(s)+'" y="'+(h-24)+'" text-anchor="middle">'+(s*100)+'%</text>');
+ html+='<text x="'+(pad.l+pw/2)+'" y="'+(h-4)+'" text-anchor="middle">Initial retailer market share</text>';
+ lines.forEach((line,i)=>{const q=calculate(line.p);html+='<path d="M'+x(0)+','+y(q.intercept/1000)+' L'+x(1)+','+y(q.end/1000)+'" stroke="'+line.color+'" stroke-width="'+(line.current?3.5:2.5)+'" fill="none" '+(line.dash?'stroke-dasharray="'+line.dash+'"':"")+'/>';});
+ if(root!==null&&root>=0&&root<=1){html+='<circle cx="'+x(root)+'" cy="'+y(0)+'" r="5" fill="#19745e"/><text x="'+x(root)+'" y="'+(y(0)-12)+'" text-anchor="'+(root<.2?"start":root>.8?"end":"middle")+'">Threshold '+pct(root)+'</text>';}
+ if(share!==null){const py=y(profit(lines[0].p,share)/1000);html+='<line x1="'+x(share)+'" x2="'+x(share)+'" y1="'+pad.t+'" y2="'+(h-pad.b)+'" stroke="#81939b" stroke-dasharray="3 5"/><circle cx="'+x(share)+'" cy="'+py+'" r="4" fill="#2469ae"/>';}
+ svg.setAttribute("viewBox","0 0 "+w+" "+h);svg.innerHTML=html;
+ if(id==="main-chart")svg.onclick=event=>{const rect=svg.getBoundingClientRect();$("share").value=Math.max(0,Math.min(100,(event.clientX-rect.left-pad.l)/pw*100));render();};
+}
+function sensitivity(p){
+ const key=$("sensitivity-parameter").value,rows=scenarios(p,key),colors=["#2469ae","#b45c27","#19745e","#7c4fa0"],dashes=["","8 4","3 3","10 3 2 3"];
+ const label=value=>["a","r","delta"].includes(key)?pct(value):key==="c"?smallMoney(value):money(value);
+ $("sensitivity-note").textContent=key==="delta"?"Includes the current defection rate, 20%, the slope cutoff, and 60%. The cutoff curve is flat; fixed costs determine its level.":"Includes the current value and three alternatives. All remaining inputs are unchanged.";
+ const symbol='<var>'+(key==="delta"?"δ":key)+'</var>';
+ $("sensitivity-legend").innerHTML=rows.map((row,i)=>'<span><i class="key" style="background:'+colors[i]+'"></i>'+symbol+' = '+label(row.value)+(row.current?" (current)":"")+'</span>').join("");
+ plot("sensitivity-chart",rows.map((row,i)=>({...row,color:colors[i],dash:dashes[i]})));
+ $("sensitivity-table").innerHTML=rows.map(row=>{const q=calculate(row.p);return "<tr><td>"+symbol+" = "+label(row.value)+(row.current?" (current)":"")+"</td><td>"+money(q.intercept)+"</td><td>"+money(q.end)+"</td><td>"+q.decision+"</td></tr>";}).join("");
+}
+function render(){
+ let p;
+ try{p=read();}catch(e){$("error").textContent=e.message;$("export").disabled=true;return;}
+ $("error").textContent="";$("export").disabled=false;
+ const q=calculate(p),s=+$("share").value/100,acq=p.a*p.N*(1-s)*q.A,ret=p.a*p.N*s*q.D,total=acq+ret-p.F;
+ $("decision").textContent=q.decision;$("decision-detail").textContent=q.detail;
+ $("case").textContent=q.flat?"No share effect":q.slope<0?"Case 1 · decreasing":"Case 2 · increasing";
+ $("slope").textContent=(q.slope<0?"−":"+")+money(Math.abs(q.slope)/100)+" per additional percentage point of share";
+ $("share-value").textContent=pct(s);
+ $("terms").innerHTML='<div><small>Acquisition contribution</small><strong>'+money(acq)+'</strong></div><div><small>Net retention contribution</small><strong>'+money(ret)+'</strong></div><div><small>Profit after fixed cost</small><strong>'+money(total)+'</strong></div>';
+ $("probe-description").textContent="At "+pct(s)+" share: "+(Math.abs(total)<1e-6?"indifferent.":total>0?"allow agents.":"block agents.")+" Fixed cost: "+money(p.F)+".";
+ $("active-equation").textContent="ΔΠ(s) = "+money(q.intercept)+(q.slope<0?" − ":" + ")+money(Math.abs(q.slope))+" × s   (s expressed as a fraction)";
+ $("A").textContent=smallMoney(q.A);$("D").textContent=smallMoney(q.D);$("delta-cutoff").textContent="δ > "+pct(q.cutoff);
+ $("interpretation").textContent=q.flat?"Incremental profit is constant across shares at these settings.":q.slope<0?"Acquisition value A exceeds net retention value D. More initial share shifts weight toward the less valuable pool.":"Net retention value D exceeds acquisition value A. More initial share shifts weight toward the more valuable pool.";
+ if(q.D<0)$("interpretation").textContent+=" Here D is negative: agent costs on existing transactions exceed the margin saved by preventing defection.";
+ $("threshold-explanation").textContent="The defection cutoff of "+pct(q.cutoff)+" determines when the slope becomes positive (if a > 0). It does not establish profitable participation. "+q.decision+". "+(q.root!==null&&q.root>=0&&q.root<=1?"The zero-profit market share is "+pct(q.root)+".":"There is no unique zero-profit threshold within 0–100% share.");
+ plot("main-chart",[{p,color:"#2469ae",current:true}],{root:q.root,region:q.region,share:s});
+ if($("sensitivity").open)sensitivity(p);
+ ["active-equation","delta-cutoff","interpretation","threshold-explanation"].forEach(id=>{$(id).innerHTML=italicSymbols($(id).textContent);});
+}
+createControls();
+$("preset").addEventListener("change",()=>preset($("preset").value));
+$("reset").addEventListener("click",()=>preset($("preset").value));
+$("share").addEventListener("input",render);
+$("sensitivity").addEventListener("toggle",render);
+$("sensitivity-parameter").addEventListener("change",render);
+$("set-defensive").addEventListener("click",()=>{$("sensitivity-parameter").value="delta";preset("defensive");});
+$("export").addEventListener("click",()=>{
+ const p=read(),key=$("sensitivity-parameter").value,rows=$("sensitivity").open?scenarios(p,key):[{p,value:null,current:true}];
+ const columns=["scenario","share","incremental_profit","acquisition_contribution","net_retention_contribution","a","r","delta","c","F","N","m"];
+ const csv=[columns.join(",")];
+ rows.forEach(row=>{const q=calculate(row.p);for(let i=0;i<=1000;i++){const s=i/1000;csv.push([row.value===null?"current":key+"="+row.value,s,profit(row.p,s),row.p.a*row.p.N*(1-s)*q.A,row.p.a*row.p.N*s*q.D,...columns.slice(5).map(k=>row.p[k])].join(","));}});
+ const url=URL.createObjectURL(new Blob([csv.join("\n")],{type:"text/csv"})),link=document.createElement("a");link.href=url;link.download="agentic-commerce-web01.csv";link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+});
+window.addEventListener("resize",render);preset("baseline");
+</script>
+</body>
+</html>
