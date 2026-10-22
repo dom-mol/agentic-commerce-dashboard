@@ -102,7 +102,7 @@ function calculate(p){
   else{region="none";decision="Block at every share";detail="Negative incremental profit throughout.";}
  }else if(intercept>=-tol&&end>=-tol){region="all";decision="Allow at every share";detail="Both endpoint profits are nonnegative.";}
  else if(intercept < -tol&&end < -tol){region="none";decision="Block at every share";detail="Both endpoint profits are negative.";}
- else if(slope<0){region="below";decision="Allow at or below "+pct(root);detail="Indifferent at the threshold; block above it.";}
+ else if(slope<0){region="below";decision="Allow < "+pct(root);detail="Indifferent at the threshold; block above it.";}
  else{region="above";decision="Allow at or above "+pct(root);detail="Indifferent at the threshold; block below it.";}
  const cutoff=p.c/p.m+p.r*(1-p.c/p.m);
  return {A,D,intercept,slope,end,flat,root,region,decision,detail,cutoff};
