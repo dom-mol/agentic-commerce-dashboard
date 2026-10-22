@@ -15,7 +15,7 @@
 <aside aria-label="Parameters">
 <h2>Model inputs</h2>
 <label for="preset" class="small">Starting scenario</label>
-<select id="preset"><option value="baseline">Case 1 · 18.75%</option><option value="defensive">Case 2 · 37.5%</option><option value="all">Allow at every share</option><option value="none">Block at every share</option></select>
+<select id="preset"><option value="baseline">Case 1 · 18.75%</option><option value="defensive">Case 2 · allow at every share</option><option value="all">Allow at every share</option><option value="none">Block at every share</option></select>
 <p class="small" id="scenario-note">Illustrative assumptions, not market estimates.</p>
 <div id="controls"></div>
 <p class="small"><var>N</var> and <var>m</var> are fixed in the paper’s illustration; they can also be varied here. Dollar inputs are USD.</p>
@@ -49,7 +49,7 @@
 <p class="small">Compare alternative values of one input while keeping every other input at the current settings.</p>
 <div class="sensitivity-controls">
 <label for="sensitivity-parameter">Vary<select id="sensitivity-parameter"><option value="delta">Defection if blocked · 𝛿</option><option value="a">Agent adoption · 𝑎</option><option value="r">Acquisition probability · 𝑟</option><option value="c">Agent cost · 𝑐</option><option value="F">Annual fixed cost · 𝐹</option></select></label>
-<div><button id="set-defensive" type="button">Load 44% vs. 37.5% example</button></div>
+<div><button id="set-defensive" type="button">Compare defection · fixed cost $190,000</button></div>
 </div>
 <p id="sensitivity-note" class="small"></p>
 <div class="legend" id="sensitivity-legend"></div>
@@ -79,7 +79,7 @@ const specs=[
 ];
 const presets={
  baseline:{a:.2,r:.2,delta:.2,c:3,F:190000,N:1000000,m:10},
- defensive:{a:.2,r:.2,delta:.6,c:3,F:400000,N:1000000,m:10},
+ defensive:{a:.2,r:.2,delta:.6,c:3,F:190000,N:1000000,m:10},
  all:{a:.2,r:.2,delta:.6,c:3,F:100000,N:1000000,m:10},
  none:{a:.2,r:.2,delta:.2,c:3,F:400000,N:1000000,m:10}
 };
