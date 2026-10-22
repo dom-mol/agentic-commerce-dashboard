@@ -1,4 +1,4 @@
-# Allow or block shopping agents?
+# Dashboard: Allow or block shopping agents?
 
 Interactive dashboard for comparing incremental profit from shopping-agent access across initial retailer market shares.
 
