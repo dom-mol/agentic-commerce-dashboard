@@ -12,6 +12,14 @@ close(calculate(presets.baseline).root, .1875);
 close(calculate(presets.baseline).intercept, 90000);
 close(calculate(presets.baseline).slope, -480000);
 close(profit(presets.baseline, .1), 42000);
+const marketScenarios = scenarios(presets.baseline, 'N');
+assert.deepEqual(Array.from(marketScenarios, row=>row.p.N), [500000,1000000,1500000,2000000]);
+for (const row of marketScenarios) {
+  for (const key of Object.keys(presets.baseline).filter(key=>key!=='N')) assert.equal(row.p[key],presets.baseline[key]);
+}
+assert.equal(calculate(marketScenarios[0].p).region, 'none');
+close(calculate(marketScenarios[3].p).root, .3854166666666667);
+assert.equal(marketScenarios.filter(row=>row.current).length, 1);
 close(calculate(presets.defensive).root, -.28125);
 assert.equal(calculate(presets.defensive).region, 'all');
 close(calculate(presets.defensive).intercept, 90000);
